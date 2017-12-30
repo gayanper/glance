@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -133,8 +134,15 @@ public class PopupSearchDialog extends SearchPanel {
 	private Point getTargetLocation() {
 		Shell shell = target.getShell();
 		Display display = target.getDisplay();
-		Point location = target.getLocation();
-		location = display.map(target.getParent(), shell, location);
+		Point location = null;
+
+		if (target instanceof StyledText) {
+			location = new Point((target.getSize().x - getPreferedWidth()), 1);
+			location = display.map(target, shell, location);
+		} else {
+			location = target.getLocation();
+			location = display.map(target.getParent(), shell, location);
+		}
 		return shell.toDisplay(location);
 	}
 
@@ -183,8 +191,14 @@ public class PopupSearchDialog extends SearchPanel {
 		protected Point getInitialLocation(Point initialSize) {
 			Point location = getTargetLocation();
 			Point size = target.getSize();
-			int x = location.x + size.x / 2 - initialSize.x / 2;
-			int y = location.y + size.y;
+			int x = location.x;
+			int y = location.y;
+
+			if (!(target instanceof StyledText)) {
+				x = location.x + size.x / 2 - initialSize.x / 2;
+				y = location.y + size.y;
+			}
+
 			Rectangle bounds = target.getMonitor().getBounds();
 			if (y + initialSize.y > bounds.y + bounds.height) {
 				y = location.y - initialSize.y;
